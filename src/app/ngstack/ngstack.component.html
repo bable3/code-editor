@@ -1,0 +1,19 @@
+<div *ngFor="let variable of variables">
+  <div>{{ variable.title }}</div>
+  <button
+    *ngFor="let variable of variable.variables"
+    (click)="appendCode(variable.value)"
+  >
+    {{ variable.name }}
+  </button>
+</div>
+<ngs-code-editor
+  #editor
+  [codeModel]="codeModel"
+  formcomponentName="codeEditor"
+  (valueChanged)="updateCodeModel($event)"
+  [theme]="'vs-dark'"
+  (click)="insertU200B()"
+>
+</ngs-code-editor>
+{{ this.codeModel.value | json }}

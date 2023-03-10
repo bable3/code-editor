@@ -1,0 +1,98 @@
+import { Component, ViewChild } from '@angular/core';
+import { CodeEditorComponent, CodeModel } from '@ngstack/code-editor';
+import {
+  NuMonacoEditorComponent,
+  NuMonacoEditorDiffComponent,
+  NuMonacoEditorDiffModel,
+  NuMonacoEditorEvent,
+  NuMonacoEditorModel,
+} from '@ng-util/monaco-editor';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+})
+export class AppComponent {
+  title = 'CODE-EDITOR';
+  theme = 'vs-dark';
+  _reload = true;
+
+  value: string = 'const a = 1;';
+  editorOptions = { theme: 'vs-dark', language: 'typescript' };
+
+  @ViewChild('editor') editor!: CodeEditorComponent;
+
+  codeModel: CodeModel = {
+    language: 'html',
+    uri: 'template.html',
+    value: '<h1>Hello World</h1>',
+  };
+  codeModel2: NuMonacoEditorModel = {
+    language: 'html',
+    value: '<h1>Hello World</h1>',
+  };
+
+  options = {
+    automaticLayout: true,
+    contextmenu: true,
+    minimap: {
+      enabled: true,
+    },
+  };
+
+  variables: JsRendererVariableCollection[] = [
+    {
+      title: 'Content',
+      variables: [
+        {
+          name: '@bill',
+          value: '{{:clientName}}',
+        },
+        {
+          name: '@clientEmail',
+          value: '{{:clientEmail}}',
+        },
+      ],
+    },
+    {
+      title: 'Local',
+      variables: [
+        {
+          name: 'name',
+          value: 'John Doe',
+        },
+        {
+          name: 'age',
+          value: 30,
+        },
+      ],
+    },
+  ];
+
+  onCodeChanged(value: string) {
+    console.log(value);
+  }
+
+  apprendCode(code: string) {
+    this.codeModel.value += code;
+    this.forceReload();
+  }
+  private forceReload() {
+    this._reload = false;
+    setTimeout(() => {
+      this._reload = true;
+    });
+  }
+}
+
+export interface JsRendererVariable {
+  name: string;
+  value: any;
+  childs?: JsRendererVariableCollection[];
+}
+
+export interface JsRendererVariableCollection {
+  title: string;
+  variables: JsRendererVariable[];
+}
