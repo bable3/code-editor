@@ -13,7 +13,6 @@
   formcomponentName="codeEditor"
   (valueChanged)="updateCodeModel($event)"
   [theme]="'vs-dark'"
-  (click)="insertU200B()"
 >
 </ngs-code-editor>
 {{ this.codeModel.value | json }}
