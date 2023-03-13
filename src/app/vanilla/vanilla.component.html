@@ -1,11 +1,20 @@
 <div *ngFor="let variable of variables">
   <div>{{ variable.title }}</div>
-  <button
-    *ngFor="let variable of variable.variables"
-    (click)="appendCode(variable.value)"
-  >
-    {{ variable.name }}
-  </button>
+  <ng-container *ngFor="let variable of variable.variables">
+    <button (click)="appendCode(variable.value)">
+      {{ variable.name }}
+    </button>
+    <ng-container *ngFor="let child of variable.childs">
+      <ng-container *ngIf="variable.visible">
+        <button
+          *ngFor="let child of child.variables"
+          (click)="appendCode(child.value)"
+        >
+          {{ child.name }}
+        </button>
+      </ng-container>
+    </ng-container>
+  </ng-container>
 </div>
 {{ code$ | async }}
 <div id="editor" #editor class="monaco-editor editor"></div>

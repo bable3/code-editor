@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { JsRendererVariableCollection } from 'src/shared/models/JsRendererVariableCollection';
 
 @Component({
@@ -10,13 +10,20 @@ import { JsRendererVariableCollection } from 'src/shared/models/JsRendererVariab
 export class VanillaComponent implements AfterViewInit {
   private _editor: any;
 
-  code$ = new BehaviorSubject(`<h1>This is some fake things</h1>
-<p>Here is a list of things</p>
-<ul>
-    <li>Thing 1</li>
-    <li>Thing 2</li>
-    <li>Thing 3</li>
-</ul>`);
+  code$ = new BehaviorSubject(`
+{{ for : bar }}
+
+{{ endfor }}
+          
+{{ for : foo }}
+
+{{ endfor }}
+         `);
+  codeByLine$ = this.code$.pipe(
+    map((code) => {
+      return code.split('\n');
+    })
+  );
 
   @ViewChild('editor', { static: true })
   editorContent!: ElementRef<HTMLDivElement>;
@@ -29,9 +36,35 @@ export class VanillaComponent implements AfterViewInit {
   private setupEditor() {
     const domElement = this.editorContent.nativeElement;
 
-    this._editor = monaco.editor.create(domElement);
+    this._editor = monaco.editor.create(domElement, {
+      value: this.code$.value,
+      language: 'html',
+      automaticLayout: true,
+      theme: 'vs-dark',
+    });
+
     this._editor.onDidChangeCursorPosition((event: any) => {
+      this.updateVariables(null);
       this.position = event.position;
+      let variableName = null;
+      const codeLines = this._editor.getValue().split('\n');
+      const forLoopPattern = /{{\s*for\s*:\s*(\w+)\s*}}/;
+      const endforPattern = /{{\s*endfor\s*}}/;
+      const lineIndex = this.position.lineNumber - 1;
+
+      for (let i = lineIndex - 1; i >= 0; i--) {
+        const line = codeLines[i];
+        const forLoopMatch = line.match(forLoopPattern);
+        const endforMatch = line.match(endforPattern);
+        if (forLoopMatch) {
+          variableName = forLoopMatch[1];
+          this.updateVariables(variableName);
+          break;
+        } else if (endforMatch) {
+          break;
+        } else {
+        }
+      }
     });
     this._editor.onDidChangeModelContent((event: any) => {
       this.code$.next(this._editor.getValue());
@@ -55,30 +88,83 @@ export class VanillaComponent implements AfterViewInit {
     this._editor.focus();
   }
 
+  updateVariables(variableName: string | null) {
+    this.variables = this.variables.map((variable) => {
+      variable.variables = variable.variables.map((variable) => {
+        if (variable.name === variableName) {
+          variable.visible = true;
+        } else {
+          variable.visible = false;
+        }
+        return variable;
+      });
+      return variable;
+    });
+  }
   variables: JsRendererVariableCollection[] = [
     {
-      title: 'Content',
+      title: 'Prestation',
       variables: [
         {
-          name: '@bill',
-          value: '{{:clientName}}',
-        },
-        {
-          name: '@clientEmail',
-          value: '{{:clientEmail}}',
+          name: 'prestations',
+          value: `
+{{ for : prestations }}
+
+{{ endfor }}
+          `,
+          visible: false,
+          childs: [
+            {
+              title: 'Prestation',
+              variables: [
+                {
+                  name: 'name',
+                  value: 'name',
+                },
+                {
+                  name: 'description',
+                  value: 'description',
+                },
+                {
+                  name: 'price',
+                  value: 'price',
+                },
+              ],
+            },
+          ],
         },
       ],
     },
     {
-      title: 'Local',
+      title: 'Contract',
       variables: [
         {
-          name: 'name',
-          value: 'John Doe',
-        },
-        {
-          name: 'age',
-          value: 30,
+          name: 'contracts',
+          value: `
+{{ for : contracts }}
+
+{{ endfor }}
+          `,
+          visible: false,
+          childs: [
+            {
+              title: 'Contracts',
+              variables: [
+                {
+                  name: 'name',
+                  value: 'name',
+                },
+                {
+                  name: 'description',
+                  value: 'description',
+                },
+                {
+                  name: 'price',
+                  value: 'price',
+                },
+              ],
+            },
+          ],
         },
       ],
     },
