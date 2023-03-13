@@ -3,6 +3,7 @@
   <button
     *ngFor="let variable of variable.variables"
     (click)="appendCode(variable.value)"
+    [disabled]="buisy$ | async"
   >
     {{ variable.name }}
   </button>

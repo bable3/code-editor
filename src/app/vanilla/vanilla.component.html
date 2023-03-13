@@ -1,0 +1,11 @@
+<div *ngFor="let variable of variables">
+  <div>{{ variable.title }}</div>
+  <button
+    *ngFor="let variable of variable.variables"
+    (click)="appendCode(variable.value)"
+  >
+    {{ variable.name }}
+  </button>
+</div>
+{{ code$ | async }}
+<div id="editor" #editor class="monaco-editor editor"></div>

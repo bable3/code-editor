@@ -11,9 +11,10 @@ import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { CodemirorComponent } from './codemiror/codemiror.component';
 import { NgstackComponent } from './ngstack/ngstack.component';
+import { VanillaComponent } from './vanilla/vanilla.component';
 
 @NgModule({
-  declarations: [AppComponent, CodemirorComponent, NgstackComponent],
+  declarations: [AppComponent, CodemirorComponent, NgstackComponent, VanillaComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,

@@ -3,6 +3,7 @@ import { AfterViewInit, Component, OnDestroy, ViewChild } from '@angular/core';
 import { CodeEditorComponent, CodeModel } from '@ngstack/code-editor';
 import { JsRendererVariableCollection } from 'src/shared/models/JsRendererVariableCollection';
 import { CursorPostion } from '../../shared/models/CursorPostion';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-ngstack',
@@ -12,13 +13,16 @@ import { CursorPostion } from '../../shared/models/CursorPostion';
 export class NgstackComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editor') editor!: CodeEditorComponent;
   cursor!: any;
+  lines_container!: any;
   cursorPosition: CursorPostion = { x: 0, y: 0, line: 0, column: 0 };
   observer!: MutationObserver;
+  buisy$ = new BehaviorSubject<boolean>(false);
 
   ngAfterViewInit(): void {
     this.cursor = this.editor.editorContent.nativeElement.querySelector(
       '.cursor.monaco-mouse-cursor-text'
     );
+
     this.observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (
@@ -95,6 +99,7 @@ export class NgstackComponent implements AfterViewInit, OnDestroy {
   cursorIndex!: number;
 
   appendCode(code: string) {
+    this.buisy$.next(true);
     // strange workaround to update the code model
     // https://github.com/ngstack/code-editor/issues/476
     let codeByLine = this.codeModel.value.split('\n');
@@ -105,6 +110,7 @@ export class NgstackComponent implements AfterViewInit, OnDestroy {
       code +
       line.slice(this.cursorPosition.column);
     codeByLine[this.cursorPosition.line] = line;
+
     const newCodeModel: CodeModel = {
       ...this.codeModel,
       value: codeByLine.join('\n'),
@@ -115,6 +121,8 @@ export class NgstackComponent implements AfterViewInit, OnDestroy {
         previousCursorPosition.x + code.length * 7.23
       }px`;
       this.cursor.style.top = `${previousCursorPosition.y}px`;
+
+      this.buisy$.next(false);
     }, 100);
   }
 
